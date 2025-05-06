@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyNetDiary - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .progress-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #e5e7eb;
+        }
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+        }
+        .progress-text {
+            position: relative;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .fitness-gauge {
+            width: 220px;
+            height: 110px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .fitness-gauge .gauge {
+            width: 100%;
+            height: 100%;
+            border-radius: 50% 50% 0 0;
+            background: #e5e7eb;
+            transition: background 1s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .fitness-gauge .needle {
+            width: 3px;
+            height: 55%;
+            background: #333;
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform-origin: bottom;
+            transition: transform 1s ease-in-out, background 1s ease-in-out;
+            border-radius: 2px;
+        }
+        .fitness-gauge .needle.high {
+            background: #34c759;
+        }
+        .fitness-gauge .needle.medium {
+            background: #f59e0b;
+        }
+        .fitness-gauge .needle.low {
+            background: #ef4444;
+        }
+        .dashboard-content {
+            transition: opacity 0.3s ease;
+        }
+        .dashboard-content.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #fitnessChecker {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 300px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-green-600 text-white p-4 flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="{{ url_for('static', filename='images/mynetdiary_logo.png') }}" alt="MyNetDiary Logo" class="h-12 mr-4">
+            <h1 class="text-2xl font-bold">MyNetDiary</h1>
+        </div>
+        <nav>
+            <a href="{{ url_for('dashboard') }}" class="mr-4 hover:underline">Dashboard</a>
+            <a href="{{ url_for('plan') }}" class="mr-4 hover:underline">Plan</a>
+            <a href="{{ url_for('profile') }}" class="mr-4 hover:underline">Profile</a>
+            <a href="#" onclick="toggleFitness()" class="mr-4 hover:underline">Check Fitness</a>
+            <a href="{{ url_for('logout') }}" class="mr-4 hover:underline">Logout</a>
+           
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-6 dashboard-content">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded mb-4">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Profile Completion Alert -->
+        {% if not profile_complete %}
+            <div class="bg-yellow-100 border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+                <span>Please complete your profile to get personalized recommendations. <a href="{{ url_for('onboarding') }}" class="underline">Complete Profile</a></span>
+            </div>
+        {% endif %}
+
+        <!-- Log Activity Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Log Your Activity</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Food Log Form -->
+                <form method="POST" class="space-y-4">
+                    {{ food_form.hidden_tag() }}
+                    <div>
+                        <label for="food" class="block text-sm font-medium text-gray-700">Log Food</label>
+                        <select name="{{ food_form.food.name }}" id="food" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                            {% for value, label in food_form.food.choices %}
+                                <option value="{{ value }}" {% if value in liked_food_ids %}style="color: green;"{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if food_form.food.errors %}
+                            {% for error in food_form.food.errors %}
+                                <span class="text-red-600 text-sm">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="servings" class="block text-sm font-medium text-gray-700">Servings</label>
+                        {{ food_form.servings(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500", placeholder="e.g., 1.5") }}
+                        {% if food_form.servings.errors %}
+                            {% for error in food_form.servings.errors %}
+                                <span class="text-red-600 text-sm">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    {{ food_form.submit(class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700") }}
+                </form>
+
+                <!-- Exercise Log Form -->
+                <form method="POST" class="space-y-4">
+                    {{ exercise_form.hidden_tag() }}
+                    <div>
+                        <label for="exercise" class="block text-sm font-medium text-gray-700">Log Exercise</label>
+                        <select name="{{ exercise_form.exercise.name }}" id="exercise" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                            {% for value, label in exercise_form.exercise.choices %}
+                                <option value="{{ value }}" {% if value in liked_exercise_ids %}style="color: green;"{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if exercise_form.exercise.errors %}
+                            {% for error in exercise_form.exercise.errors %}
+                                <span class="text-red-600 text-sm">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="hours" class="block text-sm font-medium text-gray-700">Hours</label>
+                        {{ exercise_form.hours(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500", placeholder="e.g., 1.0") }}
+                        {% if exercise_form.hours.errors %}
+                            {% for error in exercise_form.hours.errors %}
+                                <span class="text-red-600 text-sm">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    {{ exercise_form.submit(class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700") }}
+                </form>
+
+                <!-- Weight Log Form -->
+                <form method="POST" class="space-y-4">
+                    {{ weight_form.hidden_tag() }}
+                    <div>
+                        <label for="weight" class="block text-sm font-medium text-gray-700">Log Weight (kg)</label>
+                        {{ weight_form.weight(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500", placeholder="e.g., 70.5") }}
+                        {% if weight_form.weight.errors %}
+                            {% for error in weight_form.weight.errors %}
+                                <span class="text-red-600 text-sm">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    {{ weight_form.submit(class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700") }}
+                </form>
+            </div>
+        </div>
+
+        <!-- Progress Selection -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">View Progress</h2>
+            <form method="POST" class="space-y-4">
+                {{ progress_form.hidden_tag() }}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700">Select Date</label>
+                        {{ progress_form.date(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500", type="date") }}
+                        {% if progress_form.date.errors %}
+                            {% for error in progress_form.date.errors %}
+                                <span class="text-red-600 text-sm">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="period" class="block text-sm font-medium text-gray-700">Period</label>
+                        {{ progress_form.period(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500") }}
+                        {% if progress_form.period.errors %}
+                            {% for error in progress_form.period.errors %}
+                                <span class="text-red-600 text-sm">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {{ progress_form.submit(class="w-full md:w-auto bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700") }}
+            </form>
+        </div>
+
+        <!-- Progress Stats -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Progress for {{ selected_date.strftime('%Y-%m-%d') }} ({{ selected_period | capitalize }})</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="text-center">
+                    <p class="text-lg font-semibold">{{ total_calories_consumed }} kcal</p>
+                    <p class="text-sm text-gray-600">Calories Consumed</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-semibold">{{ stats.exercise }} kcal</p>
+                    <p class="text-sm text-gray-600">Calories Burned</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-lg font-semibold">{{ macros.carbs.consumed }}g / {{ macros.carbs.target }}g</p>
+                    <p class="text-sm text-gray-600">Carbs Consumed</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Net Calories Graph -->
+        {% if has_non_zero_net_calories and net_calories_dates and net_calories_values %}
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h2 class="text-xl font-semibold mb-4">Net Calories ({{ selected_period | capitalize }})</h2>
+                <canvas id="netCaloriesChart" class="w-full"></canvas>
+            </div>
+        {% else %}
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <p class="text-gray-600">No net calorie data available for this {{ selected_period }}. Start logging to see your progress!</p>
+            </div>
+        {% endif %}
+
+        <!-- Macronutrient Progress -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Macronutrient Progress</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="progress-circle bg-gradient-to-r from-green-400 to-green-600">
+                        <span class="progress-text">{{ macros.carbs.percentage }}%</span>
+                    </div>
+                    <p class="mt-2 text-sm font-medium">Carbs</p>
+                    <p class="text-sm text-gray-600">{{ macros.carbs.consumed }}g / {{ macros.carbs.target }}g</p>
+                    <p class="text-sm text-gray-600">Remaining: {{ macros.carbs.remaining }}g</p>
+                </div>
+                <div class="text-center">
+                    <div class="progress-circle bg-gradient-to-r from-green-400 to-green-600">
+                        <span class="progress-text">{{ macros.protein.percentage }}%</span>
+                    </div>
+                    <p class="mt-2 text-sm font-medium">Protein</p>
+                    <p class="text-sm text-gray-600">{{ macros.protein.consumed }}g / {{ macros.protein.target }}g</p>
+                    <p class="text-sm text-gray-600">Remaining: {{ macros.protein.remaining }}g</p>
+                </div>
+                <div class="text-center">
+                    <div class="progress-circle bg-gradient-to-r from-green-400 to-green-600">
+                        <span class="progress-text">{{ macros.fat.percentage }}%</span>
+                    </div>
+                    <p class="mt-2 text-sm font-medium">Fat</p>
+                    <p class="text-sm text-gray-600">{{ macros.fat.consumed }}g / {{ macros.fat.target }}g</p>
+                    <p class="text-sm text-gray-600">Remaining: {{ macros.fat.remaining }}g</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommended Meals -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4">Recommended Meals</h2>
+            {% if meals %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for meal in meals %}
+                        <div class="border rounded-lg p-4">
+                            <h3 class="text-lg font-medium">{{ meal.name }}</h3>
+                            <p class="text-sm text-gray-600">{{ meal.calories }} kcal, {{ meal.protein }}g protein, {{ meal.carbs }}g carbs, {{ meal.fat }}g fat</p>
+                            <div class="mt-2">
+                                <form method="POST" action="{{ url_for('feedback') }}" class="inline">
+                                    <input type="hidden" name="item_id" value="{{ meal.id }}">
+                                    <input type="hidden" name="item_type" value="food">
+                                    <input type="hidden" name="rating" value="like">
+                                    <button type="submit" class="text-green-600 hover:text-green-800 mr-2">Like</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('feedback') }}" class="inline">
+                                    <input type="hidden" name="item_id" value="{{ meal.id }}">
+                                    <input type="hidden" name="item_type" value="food">
+                                    <input type="hidden" name="rating" value="dislike">
+                                    <button type="submit" class="text-red-600 hover:text-red-800">Dislike</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-600">No meal recommendations yet. Complete your profile <a href="{{ url_for('onboarding') }}" class="underline">here</a> for personalized suggestions!</p>
+            {% endif %}
+        </div>
+
+        <!-- Recommended Exercises -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4">Recommended Exercises</h2>
+            {% if exercises %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for exercise in exercises %}
+                        <div class="border rounded-lg p-4">
+                            <h3 class="text-lg font-medium">{{ exercise.name }}</h3>
+                            <p class="text-sm text-gray-600">{{ exercise.calories_per_hour }} kcal/hour, Type: {{ exercise.type }}</p>
+                            <div class="mt-2">
+                                <form method="POST" action="{{ url_for('feedback') }}" class="inline">
+                                    <input type="hidden" name="item_id" value="{{ exercise.id }}">
+                                    <input type="hidden" name="item_type" value="exercise">
+                                    <input type="hidden" name="rating" value="like">
+                                    <button type="submit" class="text-green-600 hover:text-green-800 mr-2">Like</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('feedback') }}" class="inline">
+                                    <input type="hidden" name="item_id" value="{{ exercise.id }}">
+                                    <input type="hidden" name="item_type" value="exercise">
+                                    <input type="hidden" name="rating" value="dislike">
+                                    <button type="submit" class="text-red-600 hover:text-red-800">Dislike</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-600">No exercise recommendations yet. Complete your profile <a href="{{ url_for('onboarding') }}" class="underline">here</a> for personalized suggestions!</p>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Fitness Checker (hidden by default, centered modal) -->
+    <div id="fitnessChecker" class="bg-white p-6 rounded-lg shadow-md hidden">
+        <h2 class="text-xl font-semibold mb-4 text-center">Your Fitness Level</h2>
+        <div class="fitness-gauge">
+            <div class="gauge"></div>
+            <div class="needle"></div>
+        </div>
+        <p class="text-center mt-4">Your fitness level: <span id="fitnessScore">{{ fitness_score }}%</span></p>
+        <button onclick="toggleFitness()" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Close</button>
+    </div>
+
+    <script>
+        function toggleFitness() {
+            const fitnessChecker = document.getElementById('fitnessChecker');
+            const dashboardContent = document.querySelector('.dashboard-content');
+            const isHidden = fitnessChecker.classList.contains('hidden');
+
+            if (isHidden) {
+                // Show fitness checker, hide dashboard
+                fitnessChecker.classList.remove('hidden');
+                dashboardContent.classList.add('hidden');
+                updateFitnessGauge();
+            } else {
+                // Hide fitness checker, show dashboard
+                fitnessChecker.classList.add('hidden');
+                dashboardContent.classList.remove('hidden');
+            }
+        }
+
+        function updateFitnessGauge() {
+            const fitnessScore = parseInt(document.getElementById('fitnessScore').textContent) || 0;
+            const gauge = document.querySelector('.fitness-gauge .gauge');
+            const needle = document.querySelector('.fitness-gauge .needle');
+
+            if (gauge && needle) {
+                // Update gauge background with conic-gradient
+                gauge.style.background = `conic-gradient(#34c759 0% ${fitnessScore}%, #e5e7eb ${fitnessScore}% 100%)`;
+
+                // Calculate needle rotation (0% -> -90deg, 100% -> 90deg)
+                const rotation = (fitnessScore / 100 * 180) - 90;
+                needle.style.transform = `rotate(${rotation}deg)`;
+
+                // Update needle color based on fitness score
+                needle.classList.remove('high', 'medium', 'low');
+                if (fitnessScore >= 70) {
+                    needle.classList.add('high');
+                } else if (fitnessScore >= 40) {
+                    needle.classList.add('medium');
+                } else {
+                    needle.classList.add('low');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Chart.js for Net Calories Graph
+            try {
+                const ctx = document.getElementById('netCaloriesChart')?.getContext('2d');
+                if (ctx) {
+                    const dates = JSON.parse('{{ net_calories_dates | tojson | safe }}') || ['No Data'];
+                    const values = JSON.parse('{{ net_calories_values | tojson | safe }}') || [0];
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dates.length ? dates : ['No Data'],
+                            datasets: [{
+                                label: 'Net Calories (Consumed - Burned)',
+                                data: values.length ? values : [0],
+                                borderColor: '#34c759',
+                                backgroundColor: 'rgba(52, 199, 89, 0.2)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Calories (kcal)'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Date'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Chart.js error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

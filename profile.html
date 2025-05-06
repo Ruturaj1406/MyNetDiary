@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - MyNetDiary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #3a923e; color: #333; display: flex; justify-content: center; min-height: 100vh; }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 600px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 60px;
+        }
+        h2 { color: #0288D1; text-align: center; margin-bottom: 20px; }
+        p { margin: 10px 0; font-size: 16px; }
+        .btn-primary {
+            background: #0288D1;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn-primary:hover { background: #01579B; }
+        @media (max-width: 768px) {
+            .container { width: 90%; padding: 20px; margin-top: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/mynetdiary_logo.png') }}" alt="MyNetDiary Logo">
+        <div class="nav">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('plan') }}">Plan</a>
+            <a href="#">Food</a>
+            <a href="#">Exercise</a>
+            <a href="#">Analysis</a>
+            <a href="#">Health</a>
+            <a href="#">Community</a>
+            <a href="{{ url_for('profile') }}">Profile</a>
+            <a href="{{ url_for('profile') }}" class="btn profile-btn">Profile</a>
+            <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        <h2>Your Profile</h2>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Sex:</strong> {{ user.sex or 'Not set' }}</p>
+        <p><strong>Weight:</strong> {{ user.weight or 'Not set' }} kg</p>
+        <p><strong>Height:</strong> {{ user.height or 'Not set' }} cm</p>
+        <p><strong>Date of Birth:</strong> {{ user.dob or 'Not set' }}</p>
+        <p><strong>Target Weight:</strong> {{ user.target_weight or 'Not set' }} kg</p>
+        <p><strong>Activity Level:</strong> {{ user.activity_level or 'Not set' }}</p>
+        <p><strong>Dietary Preference:</strong> {{ user.dietary_pref or 'None' }}</p>
+        <p><strong>Health Goal:</strong> {{ user.health_goal or 'Not set' }}</p>
+        <a href="{{ url_for('onboarding') }}" class="btn-primary">Edit Profile</a>
+    </div>
+</body>
+</html>

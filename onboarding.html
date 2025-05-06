@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyNetDiary - Onboarding</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #3a923e; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 600px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 90px;
+        }
+        h2 { color: #0288D1; text-align: center; margin-bottom: 10px; }
+        p { color: #0288D1; text-align: center; margin-bottom: 20px; font-size: 0.9em; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .radio-group { margin-bottom: 10px; }
+        .radio-group input { width: auto; margin-right: 10px; }
+        button {
+            background: #0288D1;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover { background: #01579B; }
+        .flatpickr-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .flash-messages p.error { color: red; text-align: center; }
+        .flash-messages p.success { color: green; text-align: center; }
+        .error { color: red; font-size: 0.8em; }
+        @media (max-width: 768px) {
+            .container { width: 90%; padding: 20px; margin-top: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/mynetdiary_logo.png') }}" alt="MyNetDiary Logo">
+        <div class="nav-container">
+            <div class="nav">
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('plan') }}">Plan</a>
+                <a href="#">Food</a>
+                <a href="#">Exercise</a>
+                <a href="#">Analysis</a>
+                <a href="#">Health</a>
+                <a href="#">Community</a>
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('profile') }}" class="btn profile-btn">Profile</a>
+                <a href="{{ url_for('logout') }}" class="btn logout-btn">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h2>Tell Us About Yourself</h2>
+        <p>To calculate your calorie and nutrient needs</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('onboarding') }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="sex">Your sex:</label>
+                <div class="radio-group">
+                    {{ form.sex() }}
+                </div>
+                {% if form.sex.errors %}
+                    {% for error in form.sex.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="dob">Date of Birth:</label>
+                {{ form.dob(class="form-control datepicker", placeholder="Select date") }}
+                {% if form.dob.errors %}
+                    {% for error in form.dob.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="height">Height (cm):</label>
+                {{ form.height(class="form-control", placeholder="e.g., 170.2") }}
+                {% if form.height.errors %}
+                    {% for error in form.height.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="weight">Weight (kg):</label>
+                {{ form.weight(class="form-control", placeholder="e.g., 70.5") }}
+                {% if form.weight.errors %}
+                    {% for error in form.weight.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="target_weight">Target Weight (kg):</label>
+                {{ form.target_weight(class="form-control", placeholder="e.g., 65.0") }}
+                {% if form.target_weight.errors %}
+                    {% for error in form.target_weight.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="activity_level">Activity Level:</label>
+                {{ form.activity_level(class="form-control") }}
+                {% if form.activity_level.errors %}
+                    {% for error in form.activity_level.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="dietary_pref">Dietary Preference:</label>
+                {{ form.dietary_pref(class="form-control") }}
+                {% if form.dietary_pref.errors %}
+                    {% for error in form.dietary_pref.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="health_goal">Health Goal:</label>
+                {{ form.health_goal(class="form-control") }}
+                {% if form.health_goal.errors %}
+                    {% for error in form.health_goal.errors %}
+                        <span class="error">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr(".datepicker", {
+                dateFormat: "Y-m-d",
+                maxDate: "today",
+                defaultDate: null,
+                onChange: function(selectedDates, dateStr, instance) {
+                    document.querySelector('input[name="dob"]').value = dateStr;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

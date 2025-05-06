@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyNetDiary - Be Healthy for Life!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #3a923e; color: white; }
+        .header { position: fixed; top: 0; width: 100%; background: #3a923e; z-index: 1000; }
+        .hero { text-align: center; padding: 60px 40px; margin-top: 90px; position: relative; }
+        .hero h1 { font-size: 4em; margin: 0; font-weight: bold; }
+        .hero p { font-size: 1.5em; margin: 15px 0; }
+        .hero .devices { position: relative; height: 450px; margin: 30px 0; }
+        .hero .smartphone { width: 400px; position: absolute; left: 50%; transform: translateX(-50%); }
+        .hero .smartwatch { width: 400px; position: absolute; left: 75.3%; transform: translateY(3%); }
+        .hero .diet { width: 400px; position: absolute; right: 74%; transform: translateY(0%); }
+        .hero .app-badges { margin: 30px 0; }
+        .hero .app-badges img { width: 180px; margin: 0 15px; }
+        .content { max-width: 800px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            color: #333;
+            display: none;
+        }
+        .section.active { display: block; }
+        .section h2 { color: #0288D1; margin-bottom: 10px; }
+        .section ul { list-style-type: disc; margin-left: 20px; }
+        .section li { margin-bottom: 5px; }
+        @media (max-width: 768px) {
+            .hero { padding: 40px 20px; margin-top: 120px; }
+            .hero h1 { font-size: 2.5em; }
+            .hero p { font-size: 1.2em; }
+            .hero .devices { height: 300px; }
+            .hero .smartphone { width: 200px; }
+            .hero .smartwatch { width: 100px; left: 70%; }
+            .hero .diet { width: 100px; right: 70%; }
+            .hero .app-badges img { width: 120px; }
+            .content { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/mynetdiary_logo.png') }}" alt="MyNetDiary Logo">
+        <div class="nav-container">
+            <div class="nav">
+                <a href="#" class="section-link" data-section="features">Features</a>
+                <a href="#" class="section-link" data-section="diets">Diets</a>
+                <a href="#" class="section-link" data-section="library">Library</a>
+                <a href="#" class="section-link" data-section="food">Food</a>
+                <a href="#" class="section-link" data-section="business">Business</a>
+                <a href="{{ url_for('signup') }}" class="btn signup-btn">Sign Up</a>
+                <a href="{{ url_for('login') }}" class="btn signin-btn">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero">
+        <h1>Be Healthy for Life!</h1>
+        <p>Your weight loss, diet, and nutrition assistant.</p>
+        <div class="devices">
+            <img src="{{ url_for('static', filename='images/smartphone_dashboard.png') }}" alt="Smartphone Dashboard" class="smartphone">
+            <img src="{{ url_for('static', filename='images/salad.png') }}" alt="Salad" class="smartwatch">
+            <img src="{{ url_for('static', filename='images/diet.png') }}" alt="Diet Name" class="diet">
+        </div>
+        
+    </div>
+
+    <div class="content">
+        <div id="features" class="section">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Calorie Counter</strong>: Track your daily calorie intake effortlessly.</li>
+                <li><strong>Nutrition Tracker</strong>: Monitor macros and micros for a balanced diet.</li>
+                <li><strong>Food Logging</strong>: Access a database of over 1.8 million foods or scan barcodes.</li>
+                <li><strong>Exercise Tracking</strong>: Log workouts and see calories burned.</li>
+                <li><strong>Personalized Plans</strong>: Get tailored weight loss strategies.</li>
+                <li><strong>Progress Analysis</strong>: Visualize your journey with charts and graphs.</li>
+                <li><strong>Community Support</strong>: Connect with others for motivation and tips.</li>
+            </ul>
+        </div>
+
+        <div id="diets" class="section">
+            <h2>Diets</h2>
+            <p>MyNetDiary supports a variety of diet plans to suit your lifestyle and goals:</p>
+            <ul>
+                <li><strong>Calorie Counting</strong>: The classic approach to weight management.</li>
+                <li><strong>Low-Carb</strong>: Reduce carbohydrate intake for faster results.</li>
+                <li><strong>Keto</strong>: High-fat, low-carb diet to achieve ketosis.</li>
+                <li><strong>Vegan</strong>: Plant-based diet excluding all animal products.</li>
+                <li><strong>Vegetarian</strong>: Diet excluding meat but may include dairy and eggs.</li>
+                <li><strong>Custom Diets</strong>: Set your own macro ratios and goals.</li>
+            </ul>
+            <p>Each diet plan comes with dietitian-approved recipes and educational articles.</p>
+        </div>
+
+        <div id="library" class="section">
+            <h2>Library</h2>
+            <p>Explore our extensive library of articles and resources:</p>
+            <ul>
+                <li><strong>Nutrition Guides</strong>: Learn about balanced eating and nutrient needs.</li>
+                <li><strong>Weight Loss Tips</strong>: Strategies for sustainable weight loss.</li>
+                <li><strong>Diabetes Management</strong>: Information for those with diabetes.</li>
+                <li><strong>Feature Tutorials</strong>: How to use MyNetDiary effectively.</li>
+            </ul>
+            <p>Written by our team of dietitians, these resources help you make informed decisions.</p>
+        </div>
+
+        <div id="food" class="section">
+            <h2>Food</h2>
+            <p>Our food database and tools make logging easy:</p>
+            <ul>
+                <li><strong>Database</strong>: Over 1.8 million verified foods.</li>
+                <li><strong>Barcode Scanner</strong>: Quickly log packaged foods.</li>
+                <li><strong>Recipe Tools</strong>: Import, create, and share recipes.</li>
+                <li><strong>Food Grading</strong>: See how foods fit your diet plan.</li>
+            </ul>
+            <p>Whether you're at home or on the go, tracking your meals is simple.</p>
+        </div>
+
+        <div id="business" class="section">
+            <h2>Business</h2>
+            <p>For professionals and developers, we offer:</p>
+            <ul>
+                <li><strong>Database Licensing</strong>: Use our food database in your app.</li>
+                <li><strong>Professional Connect</strong>: Tools for dietitians and trainers.</li>
+                <li><strong>API Access</strong>: Integrate MyNetDiary features into your service.</li>
+                <li><strong>Partnerships</strong>: Collaborate to expand our database.</li>
+            </ul>
+            <p>Join us in making nutrition tracking accessible to all.</p>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            const activeSection = document.getElementById(sectionId);
+            if (activeSection) {
+                activeSection.classList.add('active');
+                activeSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        document.querySelectorAll('.section-link').forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                const sectionId = this.getAttribute('data-section');
+                showSection(sectionId);
+            });
+        });
+    </script>
+
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'939e1561cf5e53c8',t:'MTc0NjI1Nzc0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>

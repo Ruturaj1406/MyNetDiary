@@ -1,0 +1,92 @@
+.header {
+    width: 100%;
+    background: #3a923e;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    min-height: 80px;
+}
+.header img {
+    height: 50px;
+    width: auto;
+    margin-right: 20px;
+}
+
+.nav-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    padding: 8px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.profile-btn, .logout-btn {
+    background: #2E7D32;
+    color: white;
+}
+
+.signup-btn {
+    background: #FF9800;
+    color: white;
+}
+
+.signin-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 10px;
+        flex-direction: column;
+        align-items: center;
+        min-height: 60px;
+    }
+    .header img {
+        height: 40px;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    .nav-container {
+        width: 100%;
+        justify-content: center;
+    }
+    .nav {
+        flex-direction: column;
+        text-align: center;
+        margin: 10px 0;
+        gap: 10px;
+    }
+    .nav a {
+        margin: 5px 0;
+        font-size: 14px;
+    }
+    .btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
